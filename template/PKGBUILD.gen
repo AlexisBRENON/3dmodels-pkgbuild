@@ -1,0 +1,19 @@
+IFS=',' read -r -a fields <<< "$(grep "^$1" libraries.csv)"
+pkgname="${fields[0]}"
+pkgfile="${fields[1]}"
+pkgsha1="${fields[2]}"
+pkglicence="${fields[3]}"
+
+version="$(cat version.txt)"
+url_base="http://prdownloads.sourceforge.net/sweethome3d/3DModels"
+
+# shellcheck disable=SC2034
+tpl_pkgname="$pkgname" \
+tpl_source="\"${url_base}-${pkgfile}-${version}.zip\"" \
+tpl_sha1sums="\"${pkgsha1}\"" \
+tpl_licence="\"$pkglicence\"" \
+tpl_optdepends="$(grep -v "$pkgname" build/optdepends.txt)" \
+  envsubst \
+    '$tpl_pkgname $tpl_source $tpl_sha1sums $tpl_licence $tpl_optdepends' \
+    < template/tpl_PKGBUILD \
+    > "$2"

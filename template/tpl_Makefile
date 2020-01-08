@@ -1,0 +1,10 @@
+${lib_name}-install: build/$lib_name/sweethome3d-3dmodels-$lib_name.install
+
+${lib_name}-install: build/${lib_name}/sweethome3d-3dmodels-${lib_name}.install
+build/${lib_name}/sweethome3d-3dmodels-${lib_name}.install: ./template/install.gen template/template.install build/${lib_name}/.gitignore
+	$< ${lib_name} $@
+
+${lib_name}-pkg: build/${lib_name}/sweethome3d-3dmodels-${lib_name}-$(version)-1-any.pkg.tar.xz
+build/${lib_name}/sweethome3d-3dmodels-${lib_name}-$(version)-1-any.pkg.tar.xz: build/${lib_name}/PKGBUILD build/${lib_name}/sweethome3d-3dmodels-${lib_name}.install
+	cd $(dir $@) && makepkg -f
+	namcap $@
