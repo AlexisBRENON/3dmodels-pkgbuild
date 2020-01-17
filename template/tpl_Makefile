@@ -1,10 +1,39 @@
-${lib_name}-install: build/$lib_name/sweethome3d-3dmodels-$lib_name.install
+# Porcelain commands
 
-${lib_name}-install: build/${lib_name}/sweethome3d-3dmodels-${lib_name}.install
-build/${lib_name}/sweethome3d-3dmodels-${lib_name}.install: ./template/install.gen template/template.install build/${lib_name}/.gitignore
-	$< ${lib_name} $@
+pkgbuild: PKGBUILD
+install-script: sweethome3d-3dmodels-${lib_name}.install
+pkg: sweethome3d-3dmodels-${lib_name}-$(pkg_version)-$(pkg_rel)-any.pkg.tar.xz
+srcinfo: .SRCINFO
+commit: .git/refs/heads/master
 
-${lib_name}-pkg: build/${lib_name}/sweethome3d-3dmodels-${lib_name}-$(version)-1-any.pkg.tar.xz
-build/${lib_name}/sweethome3d-3dmodels-${lib_name}-$(version)-1-any.pkg.tar.xz: build/${lib_name}/PKGBUILD build/${lib_name}/sweethome3d-3dmodels-${lib_name}.install
-	cd $(dir $@) && makepkg -f
+# Plumbing commands
+
+.git:
+	git init .
+	git config --local user.name "Alexis BRENON"
+	git config --local user.email "brenon.alexis+arch@gmail.com"
+	echo "*" > .gitignore
+	git remote add origin ssh://aur@aur.archlinux.org/sweethome3d-3dmodels-${lib_name}.git
+
+PKGBUILD: $(TEMPLATE_DIR)/PKGBUILD.gen $(TEMPLATE_DIR)/tpl_PKGBUILD $(BUILD_DIR)/optdepends.txt
+	$< ${lib_name} > $@
+
+sweethome3d-3dmodels-${lib_name}.install: $(TEMPLATE_DIR)/install.gen $(TEMPLATE_DIR)/template.install
+	$< ${lib_name} > $@
+
+sweethome3d-3dmodels-${lib_name}-$(pkg_version)-$(pkg_rel)-any.pkg.tar.xz: PKGBUILD sweethome3d-3dmodels-${lib_name}.install
+	makepkg -f
 	namcap $@
+
+.SRCINFO: PKGBUILD
+	makepkg --printsrcinfo > .SRCINFO
+
+.git/refs/heads/master: PKGBUILD .SRCINFO sweethome3d-3dmodels-${lib_name}.install | .git
+	git add -f .SRCINFO PKGBUILD sweethome3d-3dmodels-${lib_name}.install
+	git fetch origin master
+	git reset --soft FETCH_HEAD
+	git commit -m "Version $(pkg_version)-$(pkg_rel)" || true
+
+publish: .git/refs/heads/master
+	git push origin master
+	touch publish

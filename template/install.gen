@@ -1,8 +1,9 @@
-IFS=',' read -r -a fields <<< "$(grep "$1" libraries.csv)"
+set -eu
+
+IFS=',' read -r -a fields <<< "$(grep "$1" "${PROJECT_DIR}/libraries.csv")"
 pkgname="${fields[0]}"
 
 tpl_pkgname="$pkgname" \
     envsubst \
       '$tpl_pkgname' \
-      < template/template.install \
-      > "$2"
+      < "${TEMPLATE_DIR}/template.install"

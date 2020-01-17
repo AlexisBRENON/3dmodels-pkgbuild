@@ -1,19 +1,23 @@
-IFS=',' read -r -a fields <<< "$(grep "^$1" libraries.csv)"
+set -eu
+
+IFS=',' read -r -a fields <<< "$(grep "^$1" "${PROJECT_DIR}/libraries.csv")"
 pkgname="${fields[0]}"
 pkgfile="${fields[1]}"
 pkgsha1="${fields[2]}"
 pkglicence="${fields[3]}"
 
-version="$(cat version.txt)"
+version="$(head -n1 "${PROJECT_DIR}/versions.txt")"
+pkg_rel="$(tail -n1 "${PROJECT_DIR}/versions.txt")"
 url_base="http://prdownloads.sourceforge.net/sweethome3d/3DModels"
 
 # shellcheck disable=SC2034
 tpl_pkgname="$pkgname" \
+tpl_pkgver="$version" \
+tpl_pkgrel="$pkg_rel" \
 tpl_source="\"${url_base}-${pkgfile}-${version}.zip\"" \
 tpl_sha1sums="\"${pkgsha1}\"" \
 tpl_licence="\"$pkglicence\"" \
-tpl_optdepends="$(grep -v "$pkgname" build/optdepends.txt)" \
+tpl_optdepends="$(grep -v "$pkgname" "${BUILD_DIR}/optdepends.txt")" \
   envsubst \
-    '$tpl_pkgname $tpl_source $tpl_sha1sums $tpl_licence $tpl_optdepends' \
-    < template/tpl_PKGBUILD \
-    > "$2"
+    '$tpl_pkgname $tpl_pkgver $tpl_pkgrel $tpl_source $tpl_sha1sums $tpl_licence $tpl_optdepends' \
+    < "${TEMPLATE_DIR}/tpl_PKGBUILD"
