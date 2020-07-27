@@ -8,6 +8,7 @@ post_install() {
         for lib in /usr/share/eteks/sweethome3d/furniture/${tpl_pkgname}/*.sh3f; do
             ln -s "$lib" "${user_home}/${user_path}/"
         done
+        chown --no-dereference --preserve-root --recursive --reference="${user_home}" "${user_home}/${user_path}"
     done
 }
 
@@ -16,7 +17,10 @@ pre_remove() {
     find /home/* -maxdepth 0 -type d \! -user root -print0 | while IFS= read -r -d '' user_home; do
         rm -f "${user_home}/${user_path}/${tpl_pkgname}-*.sh3f"
         (
-            cd "${user_home}" && rmdir --ignore-fail-on-non-empty -p "${user_path}"
+            cd "${user_home}"
+            if [ -d "${user_path}" ]; then
+                rmdir --ignore-fail-on-non-empty -p "${user_path}"
+            fi
         )
     done
 }
