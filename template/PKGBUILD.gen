@@ -1,23 +1,28 @@
 set -eu
 
-IFS=',' read -r -a fields <<< "$(grep "^$1" "${PROJECT_DIR}/libraries.csv")"
-pkgname="${fields[0]}"
-pkgfile="${fields[1]}"
-pkgsha1="${fields[2]}"
-pkglicence="${fields[3]}"
+IFS=',' read -r -a fields <<< "$(grep "^$1,$2" "${PROJECT_DIR}/libraries.csv")"
+lib_type="${fields[0]}"
+lib_name="${fields[1]}"
+pkgfile="${fields[2]}"
+version="${fields[3]}"
+pkg_rel="${fields[4]}"
+pkgsha1="${fields[5]}"
+pkglicence="${fields[6]}"
 
-version="$(head -n1 "${PROJECT_DIR}/versions.txt")"
-pkg_rel="$(tail -n1 "${PROJECT_DIR}/versions.txt")"
-url_base="http://prdownloads.sourceforge.net/sweethome3d/3DModels"
+case "${lib_type}" in
+  3dmodels) url_base="http://prdownloads.sourceforge.net/sweethome3d/3DModels" ;;
+  textures) url_base="http://prdownloads.sourceforge.net/sweethome3d/Textures" ;;
+  *) echo "Unknown lib_type: ${lib_type}" >&2 ; exit 1 ;;
+esac
 
 # shellcheck disable=SC2034
-tpl_pkgname="$pkgname" \
-tpl_pkgver="$version" \
-tpl_pkgrel="$pkg_rel" \
+tpl_pkgname="${lib_type}-${lib_name}" \
+tpl_pkgver="${version}" \
+tpl_pkgrel="${pkg_rel}" \
 tpl_source="\"${url_base}-${pkgfile}-${version}.zip\"" \
 tpl_sha1sums="\"${pkgsha1}\"" \
 tpl_licence="\"$pkglicence\"" \
-tpl_optdepends="$(grep -v "$pkgname" "${BUILD_DIR}/optdepends.txt")" \
+tpl_optdepends="$(grep -v "$tpl_pkgname" "${BUILD_DIR}/optdepends.txt")" \
   envsubst \
     '$tpl_pkgname $tpl_pkgver $tpl_pkgrel $tpl_source $tpl_sha1sums $tpl_licence $tpl_optdepends' \
-    < "${TEMPLATE_DIR}/tpl_PKGBUILD"
+    < "${TEMPLATE_DIR}/${lib_type}/PKGBUILD"
