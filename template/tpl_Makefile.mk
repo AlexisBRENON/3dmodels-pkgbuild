@@ -9,6 +9,7 @@ pkgbuild: PKGBUILD
 install-script: sweethome3d-${lib_type}-${lib_name}.install
 pkg: sweethome3d-${lib_type}-${lib_name}-$(pkg_version)-$(pkg_rel)-any.pkg.tar.zst
 srcinfo: .SRCINFO
+test: test_output
 commit: .git/refs/heads/master
 
 # Plumbing commands
@@ -32,6 +33,13 @@ sweethome3d-${lib_type}-${lib_name}-$(pkg_version)-$(pkg_rel)-any.pkg.tar.zst: P
 
 .SRCINFO: PKGBUILD
 	makepkg --printsrcinfo > .SRCINFO
+
+test_output: sweethome3d-${lib_type}-${lib_name}-$(pkg_version)-$(pkg_rel)-any.pkg.tar.zst
+	docker build -t 3dmodels-pkgbuild:$(pkg_version)-$(pkg_rel) "${PROJECT_DIR}/docker"
+	docker run -t --rm \
+		-v $(LIBRARY_DIR):/app -w /app \
+		3dmodels-pkgbuild:$(pkg_version)-$(pkg_rel) \
+		/root/test.sh $< | tee $@
 
 .git/refs/heads/master: PKGBUILD .SRCINFO sweethome3d-${lib_type}-${lib_name}.install | .git
 	git add -f .SRCINFO PKGBUILD sweethome3d-${lib_type}-${lib_name}.install

@@ -15,7 +15,7 @@ clean: $(addsuffix -clean,$(libs))
 
 # Recursive Makefile generation
 
-$(makefiles): build/%/Makefile: template/tpl_Makefile
+$(makefiles): build/%/Makefile: template/tpl_Makefile.mk
 	@mkdir -p $(dir $@)
 	@lib_name=$$(echo "$*" | cut -d'/' -f2) \
 		lib_type=$$(echo "$*" | cut -d'/' -f1) \
@@ -23,13 +23,13 @@ $(makefiles): build/%/Makefile: template/tpl_Makefile
 
 # Recursive Makefile rules
 
-steps = pkgbuild install-script pkg srcinfo publish
+steps = pkgbuild install-script pkg srcinfo test publish
 
 
 define step_template =
 $(1): $$(addsuffix -$(1),$$(libs))
 $$(addsuffix -$(1),$$(libs)): %-$(1): build/%/Makefile
-	$$(MAKE) -C $$(dir $$<) $(1)
+	$$(MAKE) -C $$(dir $$<) $(1) LIBRARY_DIR=$$(PROJECT_DIR)/$$(dir $$<)
 endef
 
 $(foreach step,$(steps),$(eval $(call step_template,$(step))))
