@@ -15,6 +15,7 @@ commit: .git/refs/heads/master
 # Plumbing commands
 
 .git:
+	git config --global init.defaultBranch master
 	git init .
 	git config --local user.name "Alexis BRENON"
 	git config --local user.email "brenon.alexis+arch@gmail.com"

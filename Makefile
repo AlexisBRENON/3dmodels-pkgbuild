@@ -10,7 +10,7 @@ export BUILD_DIR := $(PROJECT_DIR)/build
 # Porcelain targets
 
 all: $(libs)
-$(libs): %: %-pkg
+$(libs): %: build/optdepends.txt %-pkg
 clean: $(addsuffix -clean,$(libs))
 
 # Recursive Makefile generation
