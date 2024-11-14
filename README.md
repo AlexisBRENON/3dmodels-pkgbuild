@@ -5,6 +5,7 @@
 > Generates `PKGBUILD` for SweetHome3D assets
 
 🛋️🧑🌴
+
 ## Description 📜
 
 SweetHome3D comes with some pre-installed 3D models and textures.
@@ -47,6 +48,7 @@ make textures/scopia-publish
 
 Generated libraries are listed in `libraries.csv`.
 Each row lists:
+
   1. **Asset type**: `3dmodels`, `textures`
   2. **Package name**: as published to AUR
   3. **File name**: as published on SourceForge
